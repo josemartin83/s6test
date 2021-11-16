@@ -27,11 +27,17 @@ fs.createReadStream('timezone.csv')
     ).on('end', async () => {
     await formatDates(fileContents);
 });
-
+// load the timezone data
+fs.createReadStream('tzdata.csv')
+.pipe(csv())
+.on('data', (data) => {
+  tZdata[data.TimeZoneName ]= [data.TZShort, data. Offset];
+});
+// route to fetch all data on rest api
 app.get('/get-devices', function (req, res) {
     res.send(JSON.stringify(fileContents));
 });
-
+// route to fetch indevidual data on rest api
 app.post('/device', urlencodedParser, function (req, res) {
     let deviceFound = false;
     fileContents.forEach((device) => {
@@ -51,9 +57,8 @@ app.listen(restAPIPort, () => console.log(`REST service is listening on port ${r
 wsServer = new WebSocketServer({
     httpServer: server,
 });
-
+// websocket server takes id nd returns the data for that device
 wsServer.on('request', function (request) {
-    //console.log((new Date()) + ' Recieved a new connection from origin ' + request.origin + '.');
     let connection = request.accept('echo-protocol', request.origin);
     connection.on('message', (message) => {
         let selectedDevice;
@@ -109,7 +114,7 @@ async function formatDates(fileData) {
         await formatSingleDate(data);
     }
 }
-
+// call google API to get the proper timezone
 async function formatSingleDate(data) {
     let timestamp = data.timestamp_utc;
     let longitude = data.lng;
@@ -132,15 +137,19 @@ async function formatSingleDate(data) {
             const nDate = date.toLocaleString('en-GB', {
                 timeZone: timezone
             });
-            let time = date.toLocaleTimeString('en-GB', {
+            let time = date.toLocaleTimeString('en-US', {
                 hour: '2-digit',
                 minute: '2-digit',
                 timeZone: timezone,
                 hour12: false
             });
-            let date1 = date.toLocaleDateString()
-            let time1 = date.toTimeString('en-US', {timeZone: timezone});
-            data['date_time'] = `${date1} ${time1} ${timezone} ${getAbbreviation(rdata.timeZoneName)} ${getoffset(rdata)}`;
+            let rtimezone = rdata.timeZoneName?rdata.timeZoneName: timezone;
+            let offset = tZdata[rtimezone]?tZdata[rtimezone][1]:getoffset(rdata);
+            let x = offset.split(':');
+            let offsetParsed = x[0].concat(':',x[1]?x[1]:'00');
+            let date1 = date.toLocaleDateString('en-GB', {timeZone: timezone});
+            data['date_time'] = `${date1} ${time}  ${tZdata[rtimezone]?tZdata[rtimezone][0]:getAbbreviation(rtimezone)} 
+            ${offsetParsed} `;
         })
         .catch(function (error) {
             console.log(error);

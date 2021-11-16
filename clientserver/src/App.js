@@ -19,10 +19,13 @@ class App extends Component {
     <div >
 {this.state.homepage?<div className='d-flex justify-content-around '><ViewAll/>
 <div className="mb-2">
-<button id="save_changed" className="btn btn-primary btn-xl my-50 text-uppercase save-btn"
+<button id="viewbyid" className="btn btn-primary btn-xl my-50 text-uppercase save-btn"
                                 onClick={() => this.setState({homepage:false})}> View by Id
                         </button></div>
-  </div>:<div><ViewOne/></div>}
+  </div>:<div><ViewOne/>
+  <button id="back2Home" className="btn btn-primary btn-xl my-50 text-uppercase save-btn"
+                                onClick={() => this.setState({homepage:true})}> Back to View All
+                        </button></div>}
    </div>
   </>
     );

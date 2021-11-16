@@ -27,17 +27,18 @@ fs.createReadStream('timezone.csv')
     ).on('end', async () => {
         await formatDate(fileContents);
     });
+    // load the timezone data
     fs.createReadStream('tzdata.csv')
     .pipe(csv())
     .on('data', (data) => {
       tZdata[data.TimeZoneName ]= [data.TZShort, data. Offset];
     });
-
+// route to fetch all data on rest api
 app.get('/get-devices', function(req, res){
     res.send(JSON.stringify(fileContents));
 });
 
-
+// route to fetch indevidual data on rest api
 app.get('/onedevice',urlencodedParser, function (req, res){
     console.log(req.query.ID);
     let deviceFound = false;
@@ -89,7 +90,7 @@ watch('timezone.csv', function (event, filename) {
             })
         });
 });
-
+// call google API to get the proper timezone
 async function formatDate(fileData) {
     for (const data of fileData) {
         let timestamp = data.timestamp_utc;
@@ -110,7 +111,6 @@ async function formatDate(fileData) {
 
                 const date = new Date(timestamp * 1000);
                 timezone = geoTz(latitude, longitude);
-                // console.log(DateTime.fromISO(date, { zone: timezone }))
                 let time = date.toLocaleTimeString('en-US', {
                     hour: '2-digit',
                     minute: '2-digit',
