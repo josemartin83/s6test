@@ -1,40 +1,30 @@
 import React, { Component } from 'react';
-import { w3cwebsocket as W3CWebSocket } from "websocket";
 
-const client = new W3CWebSocket('ws://127.0.0.1:3030');
+import "bootstrap/dist/css/bootstrap.min.css";
+import ViewAll from './ViewAll';
+import ViewOne from './ViewOne';
+
+
 
 class App extends Component {
-constructor(props) {
-super(props);
-this.state = {dataFromServer: []};
-}
-componentDidMount() {
-  client.onopen = () => {
-   console.log('WebSocket Client Connected');
-  };
-  client.onmessage = (message) => {
-    const dataFromServer = JSON.parse(message.data);
-    console.log(dataFromServer);
-
-    dataFromServer.map((data)=>{console.log(data);
-  this.setState({dataFromServer: dataFromServer})});
-    
-  // Hello to test
-
-  };
-}
-
+  constructor(props) {
+    super(props);
+    this.state = {homepage: true};
+    }
 
   
   render() {
-    console.log(this.state.dataFromServer)
+    // console.log(this.state.dataFromServer)
     return (<>
-      <div>
-      Practical Intro To WebSockets.
-    </div>
-      <div>
-      {this.state.dataFromServer.map((data) =>(<div>{`${data.id}: ${data.date_time}`}</div>))}
-      </div></>
+    <div >
+{this.state.homepage?<div className='d-flex justify-content-around '><ViewAll/>
+<div className="mb-2">
+<button id="save_changed" className="btn btn-primary btn-xl my-50 text-uppercase save-btn"
+                                onClick={() => this.setState({homepage:false})}> View by Id
+                        </button></div>
+  </div>:<div><ViewOne/></div>}
+   </div>
+  </>
     );
   }
 }
