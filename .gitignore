@@ -26,8 +26,4 @@ package-lock.json
 node_modules
 .vscode/settings.json
 server/deviceapi-client.js
-server/index.js
-server/routes.js
-server/server.js
-server/timezones.csv
-server/documents/case-study-pdf.js
+
