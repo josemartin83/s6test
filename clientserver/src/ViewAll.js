@@ -23,9 +23,7 @@ class ViewAll extends Component {
     render() {
         console.log(this.state.dataFromServer)
         return (
-            <div>
-      {this.state.dataFromServer.map((data) =>(<div>{`${data.id}: ${data.date_time}`}</div>))}
-      </div>
+            <div>{this.state.dataFromServer.map((data) =>(<div>{`${data.id}: ${data.date_time}`}</div>))}</div>
         )
     }
 }

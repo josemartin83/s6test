@@ -18,7 +18,7 @@ let tZdata = {};
 const server = http.createServer();
 const restAPIPort = 5050;
 const webSocketPort = 3030;
-
+app.use(cors());
 //Load the initial data from the CSV file
 fs.createReadStream('timezone.csv')
     .pipe(csv())
@@ -37,10 +37,12 @@ app.get('/get-devices', function(req, res){
     res.send(JSON.stringify(fileContents));
 });
 
-app.post('/device',urlencodedParser, function (req, res){
+
+app.get('/onedevice',urlencodedParser, function (req, res){
+    console.log(req.query.ID);
     let deviceFound = false;
     fileContents.forEach((device)=>{
-        if(device['id'] === req.body.id) {
+        if(device['id'] === req.query.ID) {
             deviceFound = true;
             res.send(JSON.stringify(device));
         }

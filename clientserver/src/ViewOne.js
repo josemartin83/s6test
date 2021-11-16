@@ -1,30 +1,45 @@
 import React, { Component } from 'react';
-import { w3cwebsocket as W3CWebSocket } from "websocket";
+import axios from "axios";
 
-const client = new W3CWebSocket('ws://127.0.0.1:3030');
 
 class ViewOne extends Component {
     constructor(props) {
         super(props);
-        this.state = {dataFromServer: []};
+        this.state = {id: '', myData: [],lat:'',log:'', ts:'',dt:''};
         }
-    componentDidMount() {
-        client.onopen = () => {
-            console.log('WebSocket Client Connected');
-            };
-        client.onmessage = (message) => {
-            const dataFromServer = JSON.parse(message.data);
-            console.log(dataFromServer);
-            dataFromServer.map((data)=>{console.log(data);
-            this.setState({dataFromServer: dataFromServer})});
-          
-            };
-    }
+        
+        getOneDeviceData(){
+            axios.get(`http://localhost:5050/onedevice?ID=${this.state.id}`)
+            .then((response) =>{
+              // handle success
+              console.log(response);
+            if(response){
+              let data1 =response.data;
+              console.log(data1.date_time);
+              this.setState({dt: data1.date_time,lat: data1.lat,log: data1.lng,ts: data1.timestamp_utc})}
+            })
+ 
+        }
     render() {
-        console.log(this.state.dataFromServer)
+        
         return (
             <div>
-      {this.state.dataFromServer.map((data) =>(<div>{`${data.id}: ${data.date_time}`}</div>))}
+                        <label>Select a Device:</label>
+                        <input type="text" id="id" name="id"
+                            placeholder="Enter an Id"
+                            className="form-control py-3 px-3" required="required"
+                            onChange={event => {
+                            this.setState({id: event.target.value})
+                        }}/>
+                        <button type="button" className="btn btn-primary btn-lg client-btn" onClick={() => this.getOneDeviceData()}>Get Data
+                        </button>
+
+                       <div className= 'd-flex'> <div>Device id </div>:<div>{this.state.id}</div></div>
+                       <div className= 'd-flex'><div>Data updated timestamp</div>:<div>{this.state.ts}</div></div>
+                       <div className= 'd-flex'><div>Data updated timestamp</div>:<div>{this.state.ts}</div></div>
+                       <div className= 'd-flex'><div>Locatiion Longitude</div>:<div>{this.state.log}</div></div>
+                       <div className= 'd-flex'><div>Location Latitude</div>:<div>{this.state.lat}</div></div>
+                       <div className= 'd-flex'><div>Data processed</div>:<div>{this.state.dt}</div></div>
       </div>
         )
     }
