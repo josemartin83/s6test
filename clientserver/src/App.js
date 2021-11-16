@@ -33,7 +33,7 @@ componentDidMount() {
       Practical Intro To WebSockets.
     </div>
       <div>
-      {this.state.dataFromServer.map((data) =>(<div>{`${data.id}: ${data.fdata}`}</div>))}
+      {this.state.dataFromServer.map((data) =>(<div>{`${data.id}: ${data.date_time}`}</div>))}
       </div></>
     );
   }

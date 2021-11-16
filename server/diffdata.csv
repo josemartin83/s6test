@@ -1,4 +1,4 @@
-TimeZone,TimeZoneName,Offset
+TZShort,TimeZoneName,Offset
 ACDT,Australian Central Daylight Savings Time,+10:30
 ACST,Australian Central Standard Time,+09:30
 ACT,Acre Time,-05
