@@ -27,3 +27,4 @@ node_modules
 .vscode/settings.json
 server/deviceapi-client.js
 
+clientserver/public/robots.txt

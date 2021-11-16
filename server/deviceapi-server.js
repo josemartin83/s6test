@@ -5,7 +5,6 @@ const csv = require('csv-parser');
 const fs = require('fs');
 const express = require('express');
 const cors = require('cors');
-const Router = require('./routes');
 const geoTz = require('geo-tz')
 const key = 'AIzaSyD9agllUXdSWHnIYPbbRAFjHZ3hjKa2BV8';
 const axios = require('axios');
