@@ -6,13 +6,15 @@ const fs = require('fs');
 const express = require('express');
 const cors = require('cors');
 const geoTz = require('geo-tz');
+const bodyParser = require('body-parser');
+var urlencodedParser = bodyParser.urlencoded({ extended: false })
 const app = express();
 const key = 'AIzaSyD9agllUXdSWHnIYPbbRAFjHZ3hjKa2BV8';
 const axios = require('axios');
 const {json} = require("express");
 const clients = [];
 let fileContents = [];
-let tZdata = [];
+let tZdata = {};
 const server = http.createServer();
 const restAPIPort = 5050;
 const webSocketPort = 3030;
@@ -20,19 +22,32 @@ const webSocketPort = 3030;
 //Load the initial data from the CSV file
 fs.createReadStream('timezone.csv')
     .pipe(csv())
-    .on('data', async (data) =>
+    .on('data', (data) =>
         fileContents.push(data)
     ).on('end', async () => {
         await formatDate(fileContents);
     });
-    fs.createReadStream('timezone.csv')
+    fs.createReadStream('tzdata.csv')
     .pipe(csv())
-    .on('data', async (data) =>
-        tZdata.push(data)
-    )
+    .on('data', (data) => {
+      tZdata[data.TimeZoneName ]= [data.TZShort, data. Offset];
+    });
 
-app.get('/devices', function(req, res){
+app.get('/get-devices', function(req, res){
     res.send(JSON.stringify(fileContents));
+});
+
+app.post('/device',urlencodedParser, function (req, res){
+    let deviceFound = false;
+    fileContents.forEach((device)=>{
+        if(device['id'] === req.body.id) {
+            deviceFound = true;
+            res.send(JSON.stringify(device));
+        }
+    });
+    if(!deviceFound) {
+        res.send('Invalid device id');
+    }
 });
 
 server.listen(webSocketPort, function () {
@@ -50,16 +65,19 @@ wsServer.on('request', function (request) {
     const connection = request.accept(null);
     connection.send(JSON.stringify(fileContents));
     clients.push(connection);
+    connection.on('close', function (reasonCode, description) {
+        clients.splice(clients.indexOf(connection), 1);
     console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
+});
 });
 
 // Watch for the file updates
-watch('timezone.csv', async function (event, filename) {
+watch('timezone.csv', function (event, filename) {
     //Load the variable fileContents to a new empty array
     fileContents = [];
     fs.createReadStream('timezone.csv')
         .pipe(csv())
-        .on('data', async (data) => {
+        .on('data', (data) => {
             fileContents.push(data);
         })
         .on('end', async () => {
@@ -91,20 +109,19 @@ async function formatDate(fileData) {
                 const date = new Date(timestamp * 1000);
                 timezone = geoTz(latitude, longitude);
                 // console.log(DateTime.fromISO(date, { zone: timezone }))
-                const nDate = date.toLocaleString('en-GB', {
-                    timeZone: timezone
-                });
-                let time = date.toLocaleTimeString('en-GB', {
+                let time = date.toLocaleTimeString('en-US', {
                     hour: '2-digit',
                     minute: '2-digit',
                     timeZone: timezone,
                     hour12: false
                 });
-                let date1 = date.toLocaleDateString()
-                let time1 = date.toLocaleTimeString('en-US', {timeZone: timezone});
-                let timezne2 = tZdata[rdata.timeZoneName]
-                console.log(timezne2)
-                data['date_time'] = `${date1} ${time1} ${timezone}  ${rdata.timeZoneName} ${getAbbreviation(rdata.timeZoneName)} ${getoffset(rdata)}`;
+                let rtimezone = rdata.timeZoneName?rdata.timeZoneName: timezone;
+                let offset = tZdata[rtimezone]?tZdata[rtimezone][1]:getoffset(rdata);
+                let x = offset.split(':');
+                let offsetParsed = x[0].concat(':',x[1]?x[1]:'00');
+                let date1 = date.toLocaleDateString('en-GB', {timeZone: timezone});
+                data['date_time'] = `${date1} ${time}  ${tZdata[rtimezone]?tZdata[rtimezone][0]:getAbbreviation(rtimezone)} 
+                ${offsetParsed} `;
             })
             .catch(function (error) {
                 console.log(error);
